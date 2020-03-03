@@ -17,8 +17,13 @@
       "max": 1.0,
       "step": 0.1,
       "name": "Stud Spacing",
-      "description": "The spacing .",
+      "description": "The spacing of the studs on center.",
       "type": "range"
+    },
+    {
+      "name": "Create Wall Board",
+      "description": "Should wall board be generated?",
+      "type": "boolean"
     }
   ],
   "outputs": [

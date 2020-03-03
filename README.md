@@ -6,7 +6,8 @@ This function creates pre-fabricated wall panels from WallPanels.
 
 |Input Name|Type|Description|
 |---|---|---|
-|Stud Spacing|Range|The spacing .|
+|Stud Spacing|Range|The spacing of the studs on center.|
+|Create Wall Board|Boolean|Should wall board be generated?|
 
 
 <br>

@@ -157,7 +157,9 @@ namespace PrefabricatedPanels
 					}
 
 					var cl = new Line(a, b);	
-					var beam = new Beam(cl, (dot == 0.0 && seg.Start.Z > 0.1) ? headerProfile : studProfile, outerStudMaterial, rotation: (Double.IsNaN(beamRotation) ? 0.0 : beamRotation));
+					// var beam = new Beam(cl, (dot == 0.0 && seg.Start.Z > 0.1) ? headerProfile : studProfile, outerStudMaterial, rotation: (Double.IsNaN(beamRotation) ? 0.0 : beamRotation));
+					var beam = new Beam(cl, studProfile, outerStudMaterial, rotation: (Double.IsNaN(beamRotation) ? 0.0 : beamRotation));
+
 					elements.Add(beam);
 				}
 
@@ -170,8 +172,9 @@ namespace PrefabricatedPanels
 
 				// Only take the inner studs.
 				var innerCls = studCls.Skip(1).Take(studCls.Count - 2).ToList().Cast<Line>().ToList();
-				var trimmedInnerCls = TrimLinesToBoundary(innerCls, offset[0].Segments());
-
+				var trimBoundary = offset[0].Segments();
+				var trimmedInnerCls = TrimLinesToBoundary(innerCls, trimBoundary);
+				
 				foreach(var trimmedLine in trimmedInnerCls)
 				{
 					var t = trimmedLine.TransformAt(0);
@@ -180,22 +183,39 @@ namespace PrefabricatedPanels
 					elements.Add(innerBeam);
 				}
 
-				// Create the wall board panels
-				var wallBoardGrid = new Grid2d(wallBoardOffset[0]);
-				wallBoardGrid.U.DivideByFixedLength(Units.FeetToMeters(8.0));
-				wallBoardGrid.V.DivideByFixedLength(Units.FeetToMeters(4.0));
-				foreach(var cell in wallBoardGrid.CellsFlat)
+				grid.V.DivideByFixedLength(Units.FeetToMeters(4.0));
+				var kickerCls = grid.GetCellSeparators(GridDirection.U);
+				var kickerInnerCls = kickerCls.Skip(1).Take(kickerCls.Count - 2).ToList().Cast<Line>().ToList();;
+				var trimmedKickerCls = TrimLinesToBoundary(kickerInnerCls, trimBoundary);
+				foreach(var trimmedKicker in trimmedKickerCls)
 				{
-					var panelPerimeter = (Polygon)cell.GetTrimmedCellGeometry()[0];
-					var leftTrans = new Transform(panel.Transform);
-					leftTrans.Move(leftTrans.ZAxis * studWidth/2);
-					var panelL = new WallBoardPanel(panelPerimeter, leftTrans, wallBoard);
-
-					var rightTrans = new Transform(panel.Transform);
-					rightTrans.Move(rightTrans.ZAxis * (-studWidth/2 - Units.InchesToMeters(0.625)));
-					var panelR = new WallBoardPanel(panelPerimeter, rightTrans, wallBoard);
-					elements.Add(panelL);
-					elements.Add(panelR);
+					var beam = new Beam(panel.Transform.OfLine(trimmedKicker), studProfile, studMaterial);
+					elements.Add(beam);
+				}
+				
+				if(input.CreateWallBoard)
+				{
+					var wallBoardGrid = new Grid2d(wallBoardOffset[0]);
+					wallBoardGrid.U.DivideByFixedLength(Units.FeetToMeters(8.0));
+					wallBoardGrid.V.DivideByFixedLength(Units.FeetToMeters(4.0));
+					
+					if(wallBoardGrid.CellsFlat.Count > 0)
+					{
+						foreach(var cell in wallBoardGrid.CellsFlat)
+						{
+							foreach(Polygon panelPerimeter in cell.GetTrimmedCellGeometry())
+							{
+								var wallBoards = CreateOffsetPanel(panel, studWidth, panelPerimeter, wallBoard);
+								elements.AddRange(new[]{wallBoards.left, wallBoards.right});
+							}
+						}
+					} 
+					else
+					{
+						var panelPerimeter = wallBoardOffset[0];
+						var wallBoards = CreateOffsetPanel(panel, studWidth, panelPerimeter, wallBoard);
+						elements.AddRange(new[]{wallBoards.left, wallBoards.right});
+					}
 				}
 
 				panelCount++;
@@ -205,6 +225,18 @@ namespace PrefabricatedPanels
 			output.model.AddElements(elements);
             return output;
         }
+
+		private static (WallBoardPanel left, WallBoardPanel right) CreateOffsetPanel(WallPanel panel, double studWidth, Polygon panelPerimeter, Material wallBoard)
+		{
+			var leftTrans = new Transform(panel.Transform);
+			leftTrans.Move(leftTrans.ZAxis * studWidth/2);
+			var panelL = new WallBoardPanel(panelPerimeter, leftTrans, wallBoard);
+
+			var rightTrans = new Transform(panel.Transform);
+			rightTrans.Move(rightTrans.ZAxis * (-studWidth/2 - Units.InchesToMeters(0.625)));
+			var panelR = new WallBoardPanel(panelPerimeter, rightTrans, wallBoard);
+			return (panelL, panelR);
+		}
 
 		private static List<Line> TrimLinesToBoundary(List<Line> lines, IList<Line> boundarySegements)
         {

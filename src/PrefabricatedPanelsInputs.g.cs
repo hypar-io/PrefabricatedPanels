@@ -17,10 +17,16 @@ namespace PrefabricatedPanels
     public class PrefabricatedPanelsInputs: S3Args
     {
 		/// <summary>
-		/// The spacing .
+		/// The spacing of the studs on center.
 		/// </summary>
 		[JsonProperty("Stud Spacing")]
 		public double StudSpacing {get;}
+
+		/// <summary>
+		/// Should wall board be generated?
+		/// </summary>
+		[JsonProperty("Create Wall Board")]
+		public bool CreateWallBoard {get;}
 
 
         
@@ -31,6 +37,7 @@ namespace PrefabricatedPanels
         public PrefabricatedPanelsInputs() : base()
         {
 			this.StudSpacing = 1;
+			this.CreateWallBoard = false;
 
         }
 
@@ -40,9 +47,10 @@ namespace PrefabricatedPanels
         /// </summary>
         /// <returns></returns>
         [JsonConstructor]
-        public PrefabricatedPanelsInputs(double studspacing, string bucketName, string uploadsBucket, Dictionary<string, string> modelInputKeys, string gltfKey, string elementsKey, string ifcKey): base(bucketName, uploadsBucket, modelInputKeys, gltfKey, elementsKey, ifcKey)
+        public PrefabricatedPanelsInputs(double studspacing, bool createwallboard, string bucketName, string uploadsBucket, Dictionary<string, string> modelInputKeys, string gltfKey, string elementsKey, string ifcKey): base(bucketName, uploadsBucket, modelInputKeys, gltfKey, elementsKey, ifcKey)
         {
 			this.StudSpacing = studspacing;
+			this.CreateWallBoard = createwallboard;
 
 		}
 
