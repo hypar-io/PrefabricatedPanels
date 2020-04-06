@@ -22,6 +22,12 @@ namespace PrefabricatedPanels
 		[JsonProperty("Total Panels")]
 		public double TotalPanels {get;}
 
+		/// <summary>
+		/// The total length of framing generated.
+		/// </summary>
+		[JsonProperty("Total Length of Framing")]
+		public double TotalLengthOfFraming {get;}
+
 
         
         /// <summary>
@@ -39,9 +45,10 @@ namespace PrefabricatedPanels
         /// </summary>
         /// <returns></returns>
         [JsonConstructor]
-        public PrefabricatedPanelsOutputs(double totalpanels): base()
+        public PrefabricatedPanelsOutputs(double totalpanels, double totallengthofframing): base()
         {
 			this.TotalPanels = totalpanels;
+			this.TotalLengthOfFraming = totallengthofframing;
 
 		}
 

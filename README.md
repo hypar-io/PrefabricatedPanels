@@ -15,4 +15,5 @@ This function creates pre-fabricated wall panels from WallPanels.
 |Output Name|Type|Description|
 |---|---|---|
 |Total Panels|Number|The total number of panels generated.|
+|Total Length of Framing|Number|The total length of framing generated.|
 
