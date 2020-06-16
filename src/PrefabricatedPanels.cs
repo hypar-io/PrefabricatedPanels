@@ -1,6 +1,5 @@
 using Elements;
 using Elements.Geometry;
-using Elements.Geometry.Solids;
 using Elements.Spatial;
 using System;
 using System.Collections.Generic;
@@ -8,72 +7,6 @@ using System.Linq;
 
 namespace PrefabricatedPanels
 {
-    internal class IntersectionComparer : IComparer<Vector3>
-    {
-        private Vector3 _origin;
-        public IntersectionComparer(Vector3 origin)
-        {
-            this._origin = origin;
-        }
-
-        public int Compare(Vector3 x, Vector3 y)
-        {
-            var a = x.DistanceTo(_origin);
-            var b = y.DistanceTo(_origin);
-
-            if (a < b)
-            {
-                return -1;
-            }
-            else if (a > b)
-            {
-                return 1;
-            }
-            return 0;
-        }
-    }
-
-    public class WallBoardPanel : GeometricElement
-    {
-        public Profile Profile { get; set; }
-
-        public WallBoardPanel(Profile profile, Transform transform = null, Material material = null) : base(transform, material, null, false, Guid.NewGuid(), null)
-        {
-            this.Profile = profile;
-            this.Representation = new Representation(new List<SolidOperation>());
-        }
-
-        public override void UpdateRepresentations()
-        {
-            this.Representation.SolidOperations.Clear();
-            this.Representation.SolidOperations.Add(new Extrude(this.Profile, Units.InchesToMeters(0.625), Vector3.ZAxis, false));
-        }
-    }
-
-    public class StudProfile : Profile
-    {
-        public StudProfile() : base(null, null, Guid.NewGuid(), "Stud")
-        {
-            var w = Elements.Units.InchesToMeters(3.625);
-            var d = Elements.Units.InchesToMeters(1.5);
-            var t = 0.001;
-
-            var vertices = new List<Vector3>(){
-                new Vector3(-w/2 + t, -d/2 + t),
-                new Vector3(-w/2 + t, d/2),
-                new Vector3(-w/2, d/2),
-                new Vector3(-w/2, -d/2),
-                new Vector3(-w/2 + t, -d/2),
-                new Vector3(w/2, -d/2),
-                new Vector3(w/2, d/2),
-                new Vector3(w/2 - t, d/2),
-                new Vector3(w/2 - t, -d/2 + t)
-            };
-
-            this.Perimeter = new Polygon(vertices);
-        }
-    }
-
     public static class PrefabricatedPanels
     {
         /// <summary>
@@ -117,7 +50,7 @@ namespace PrefabricatedPanels
                 {
                     continue;
                 }
-                var outer = panel.Transform.OfPolygon(offset[0]);
+                var outer = (Polygon)offset[0].Transformed(panel.Transform);
 
                 // Get the plane of the panel
                 var panelPlane = outer.Plane();
@@ -180,7 +113,7 @@ namespace PrefabricatedPanels
                 {
                     var t = trimmedLine.TransformAt(0);
                     var beamRotation = t.XAxis.AngleTo(panelPlane.Normal);
-                    var innerBeam = new Beam(panel.Transform.OfLine(trimmedLine), studProfile, studMaterial, rotation: beamRotation);
+                    var innerBeam = new Beam(trimmedLine.Transformed(panel.Transform), studProfile, studMaterial, rotation: beamRotation);
                     totalFramingLength += trimmedLine.Length();
                     elements.Add(innerBeam);
                 }
@@ -191,7 +124,7 @@ namespace PrefabricatedPanels
                 var trimmedKickerCls = TrimLinesToBoundary(kickerInnerCls, trimBoundary);
                 foreach (var trimmedKicker in trimmedKickerCls)
                 {
-                    var beam = new Beam(panel.Transform.OfLine(trimmedKicker), studProfile, studMaterial);
+                    var beam = new Beam(trimmedKicker.Transformed(panel.Transform), studProfile, studMaterial);
                     totalFramingLength += trimmedKicker.Length();
                     elements.Add(beam);
                 }
@@ -225,7 +158,7 @@ namespace PrefabricatedPanels
             }
 
             var output = new PrefabricatedPanelsOutputs(panelCount, totalFramingLength);
-            output.model.AddElements(elements);
+            output.Model.AddElements(elements);
             return output;
         }
 
