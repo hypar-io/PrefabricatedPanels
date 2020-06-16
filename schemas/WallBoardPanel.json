@@ -1,5 +1,5 @@
 {
-    "$id": "https://raw.githubusercontent.com/hypar-io/Schemas/master/Mullion.json",
+    "$id": "https://raw.githubusercontent.com/hypar-io/Schemas/master/WallBoardPanel.json",
     "$schema": "http://json-schema.org/draft-07/schema",
     "title": "WallBoardPanel",
     "allOf": [
@@ -8,6 +8,7 @@
         }
     ],
     "required": [
+        "discriminator",
         "Profile"
     ],
     "discriminator": "discriminator",

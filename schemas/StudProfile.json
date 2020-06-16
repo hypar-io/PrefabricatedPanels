@@ -1,5 +1,5 @@
 {
-    "$id": "https://raw.githubusercontent.com/hypar-io/Schemas/master/Mullion.json",
+    "$id": "https://raw.githubusercontent.com/hypar-io/Schemas/master/StudProfile.json",
     "$schema": "http://json-schema.org/draft-07/schema",
     "title": "StudProfile",
     "allOf": [
